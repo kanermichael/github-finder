@@ -2,6 +2,7 @@ import React from "react";
 import axios from "axios";
 import Navbar from "./components/layout/Navbar";
 import Users from "./components/users/Users";
+import User from "./components/users/User";
 import Search from "./components/users/Search";
 import Alert from "./components/layout/Alert";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
@@ -12,21 +13,10 @@ import About from "./components/Pages/About";
 class App extends React.Component {
   state = {
     users: [],
+    user: {},
     loading: false,
     alert: null,
   };
-
-  // async componentDidMount() {
-  //   this.setState({ loading: true });
-
-  //   const res = await axios.get(`https://api.github.com/users`, {
-  //     headers: {
-  //       Authorization: process.env.REACT_APP_GITHUB_TOKEN,
-  //     },
-  //   });
-
-  //   this.setState({ users: res.data, loading: false });
-  // }
 
   searchUsers = async (text) => {
     this.setState({ loading: true });
@@ -42,6 +32,19 @@ class App extends React.Component {
     this.setState({ users: res.data.items, loading: false });
   };
 
+  // Get Github User Details
+
+  getUser = async (username) => {
+    this.setState({ loading: true });
+    const res = await axios.get(`https://api.github.com/users/${username}`, {
+      headers: {
+        Authorization: process.env.REACT_APP_GITHUB_TOKEN,
+      },
+    });
+
+    this.setState({ user: res.data, loading: false });
+  };
+
   clearUsers = () => {
     this.setState({ users: [] });
   };
@@ -54,7 +57,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { users, loading, alert } = this.state;
+    const { users, user, loading, alert } = this.state;
     return (
       <Router>
         <Navbar title="Github Finder" icon="fab fa-github" />
@@ -76,6 +79,18 @@ class App extends React.Component {
             )}
           />
           <Route exact path="/about" component={About} />
+          <Route
+            exact
+            path="/user/:login"
+            render={(props) => (
+              <User
+                {...props}
+                getUser={this.getUser}
+                user={user}
+                loading={loading}
+              />
+            )}
+          />
         </div>
       </Router>
     );
